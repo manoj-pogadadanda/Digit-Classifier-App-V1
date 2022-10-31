@@ -6,34 +6,61 @@ import base64
 import time
 import os
 
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+
 TIMEOUT = 400
 PORT = 8080
 
 app = Flask(__name__)
 
+def draw(n):
+    plt.imshow(n,cmap=plt.cm.binary)
+    plt.show()
+    
 @app.route('/', methods=['POST', 'GET'])
 #@app.route('/')
 def process():
     if 'image' not in request.form:
         return 'Missing required image param' , 400
-#    elif 'category' not in request.form:
-#        return 'Missing required category param' , 400
     elif 'filename' not in request.form:
         return 'Missing required filename param' , 400
     else:
-#        category = request.form['category']
         filename = request.form['filename']
         #decode base64 string data
         decoded_data=base64.b64decode((request.form['image']))
+        #Convert image to tensor
+        img_data = tf.image.decode_image(decoded_data)
+        #Convert to grey scale
+        img_data_grey = tf.image.rgb_to_grayscale(img_data)
+        #img_data_grey = tf.keras.utils.normalize(img_data_grey,axis=1)
+        #Resize to required scale
+        img_data_resized = tf.image.resize(img_data_grey, [28, 28])
+        #Create the ndarray
+        img_ndarray = np.array(img_data_resized).reshape(1,28,28)
+        #Normalise the image data
+        img_ndarray_norm = tf.keras.utils.normalize(img_ndarray,axis=1)
+        #Pre process the image
+        img_ndarray_norm_reverse = img_ndarray_norm.max() - img_ndarray_norm
+        img_ndarray_norm_reverse[img_ndarray_norm_reverse < np.quantile(img_ndarray_norm_reverse, 0.33)] = 0
+        #Load the trained model
+        model = tf.keras.models.load_model('tf_classifier.h5')
+        #Predict the digit
+        predictions=model.predict(img_ndarray_norm_reverse)
+        #predictions=model.predict(np.array(img_data).reshape(1,28,28))
+        print('prediction -> ',np.argmax(predictions[0]))
+        draw(img_ndarray_norm_reverse[0])
+        
         # Check if directory exists
-        category = "people"        
+        category = str(np.argmax(predictions[0]))        
         if not os.path.isdir(category):
             os.makedirs(category)
         #write the decoded data back to original format in  file
         img_file = open(os.path.join(os.getcwd(), category, filename) , 'wb')
         img_file.write(decoded_data)
         img_file.close()
-        print('Success', category, filename)
+        #print('Success', category, filename)
         return 'Success', 200
 
 

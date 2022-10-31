@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             Matrix matrix = new Matrix();
-            matrix.postRotate(270);
+            matrix.postRotate(90);
             Bitmap rotatedImg = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
 
