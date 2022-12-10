@@ -148,12 +148,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_REQUEST_CODE)
         {
-//            Intent selectCategoryIntent = new Intent(MainActivity.this, CategoryActivity.class);
-//            selectCategoryIntent.putExtra("CapturedImage", imagePath);
-//            startActivityForResult(selectCategoryIntent, CATEGORY_REQUEST_CODE);
-
-            //Intent intent = getIntent();
-            //String currentPhotoPath = intent.getExtras().getString("CapturedImage");
             File photoFile = new File(imagePath);
             Uri photoURI = FileProvider.getUriForFile(MainActivity.this,
                     "com.example.android.fileprovider2",

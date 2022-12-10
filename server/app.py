@@ -1,9 +1,7 @@
-import traceback
 
 from flask import Flask
 from flask import request
 import base64
-import time
 import os
 
 import tensorflow as tf
@@ -34,7 +32,6 @@ def process():
         img_data = tf.image.decode_image(decoded_data)
         #Convert to grey scale
         img_data_grey = tf.image.rgb_to_grayscale(img_data)
-        #img_data_grey = tf.keras.utils.normalize(img_data_grey,axis=1)
         #Resize to required scale
         img_data_resized = tf.image.resize(img_data_grey, [28, 28])
         #Create the ndarray
@@ -48,9 +45,8 @@ def process():
         model = tf.keras.models.load_model('tf_classifier.h5')
         #Predict the digit
         predictions=model.predict(img_ndarray_norm_reverse)
-        #predictions=model.predict(np.array(img_data).reshape(1,28,28))
         print('prediction -> ',np.argmax(predictions[0]))
-        draw(img_ndarray_norm_reverse[0])
+        #draw(img_ndarray_norm_reverse[0])
         
         # Check if directory exists
         category = str(np.argmax(predictions[0]))        
@@ -60,7 +56,6 @@ def process():
         img_file = open(os.path.join(os.getcwd(), category, filename) , 'wb')
         img_file.write(decoded_data)
         img_file.close()
-        #print('Success', category, filename)
         return 'Success', 200
 
 
